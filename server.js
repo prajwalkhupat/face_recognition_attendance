@@ -98,6 +98,14 @@ const ensureDirExists = dir => {
 ensureDirExists('./data');
 ensureDirExists('./attendance');
 
+app.post('/helloworld', (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).send('Name is required');
+    }
+    res.send(`Hello, ${name}!`);
+});
+
 // Save employee descriptors
 app.post('/save-employee', (req, res) => {
     try {
