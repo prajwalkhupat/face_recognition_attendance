@@ -78,15 +78,28 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-
 const multer = require('multer');
-const upload = multer(); // For parsing multipart/form-data
+const { Canvas, Image, ImageData } = require('canvas');
+const faceapi = require('face-api.js');
 
+// Initialize face-api.js with the canvas
+faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+// Load face-api.js models
+const MODEL_URL = path.join(__dirname, '/models'); // Update with your model directory
+Promise.all([
+    faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromDisk(MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL)
+]).then(() => {
+    console.log('Face-api models loaded');
+});
+
+const upload = multer(); // For parsing multipart/form-data
 const app = express();
 
 app.use(bodyParser.json());
@@ -109,7 +122,6 @@ app.post('/helloworld', (req, res) => {
     }
     res.send(`Hello, ${name}!`);
 });
-
 
 // Enroll a new user with an image file and a unique username
 app.post('/enrollnew', upload.single('image'), async (req, res) => {
@@ -226,4 +238,3 @@ app.get('/get-employee-descriptors', (req, res) => {
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
-
